@@ -46,6 +46,11 @@ function reducer(state, action) {
         ...state.threads.slice(threadIndex + 1, state.threads.length),
       ],
     };
+  } else if (action.type === 'OPEN_THREAD') {
+     return {
+       ...state,
+       activeThreadId: action.id,
+     };
   } else {
     return state;
   }
@@ -90,6 +95,7 @@ class App extends React.Component {
       { // a "tab" object
         title: t.title,
         active: t.id === activeThreadId,
+        id: t.id,
       }
     ));
 
@@ -103,15 +109,19 @@ class App extends React.Component {
 }
 
 class ThreadTabs extends React.Component {
-  // handleClick = () => {
-  //
-  // };
+  handleClick = (id) => {
+    store.dispatch({
+      type: 'OPEN_THREAD',
+      id: id,
+    });
+  };
 
   render() {
     const tabs = this.props.tabs.map((tab, index) => (
       <div
         key={index}
         className={tab.active ? 'active item' : 'item'}
+        onClick={() => this.handleClick(tab.id)}
       >
         {tab.title}
       </div>
