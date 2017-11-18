@@ -114,33 +114,51 @@ class App extends React.Component {
   }
 }
 
-class ThreadTabs extends React.Component {
-  handleClick = (id) => {
-    store.dispatch({
-      type: 'OPEN_THREAD',
-      id: id,
-    });
-  };
+const Tabs = (props) => (
+  <div className='ui top attached tabular menu'>
+    {
+      props.tabs.map((tab, index) => (
+        <div
+          key={index}
+          className={tab.active ? 'active item': 'item'}
+          onClick={() => props.onClick(tab.id)}
+          >
+          {tab.title}
+        </div>
+      ))
+    }
+  </div>
+);
 
+class ThreadTabs extends React.Component {
+  componentDidMount() {
+    store.subscribe(() => this.forceUpdate());
+  }
   render() {
-    const tabs = this.props.tabs.map((tab, index) => (
-      <div
-        key={index}
-        className={tab.active ? 'active item' : 'item'}
-        onClick={() => this.handleClick(tab.id)}
-      >
-        {tab.title}
-      </div>
+    const state = store.getState();
+
+    const tabs = state.threads.map(t => (
+      {
+        title: t.title,
+        active: t.id === state.activeThreadId,
+        id: t.id,
+      }
     ));
     return (
-      <div className='ui top attached tabular menu'>
-        {tabs}
-      </div>
+      <Tabs
+        tabs={tabs}
+        onClick={(id) => (
+          store.dispatch({
+            type: 'OPEN_THREAD',
+            id: id,
+          })
+        )}
+      />
     );
   }
 }
 
-class MessageInput extends React.Component {
+class TextFieldSubmit extends React.Component {
   state = {
     value: '',
   };
@@ -152,11 +170,7 @@ class MessageInput extends React.Component {
   };
 
   handleSubmit = () => {
-    store.dispatch({
-      type: 'ADD_MESSAGE',
-      text: this.state.value,
-      threadId: this.props.threadId,
-    });
+    this.props.onSubmit(this.state.value);
     this.setState({
       value: '',
     });
@@ -171,7 +185,9 @@ class MessageInput extends React.Component {
           type='text'
         />
         <button
-          onClick={this.handleSubmit}
+          onClick={() => (
+
+          )}
           className='ui primary button'
           type='submit'
         >
@@ -182,7 +198,7 @@ class MessageInput extends React.Component {
   }
 }
 
-class Thread extends React.Component {
+class ThreadDisplay extends React.Component {
   handleClick = (id) => {
     store.dispatch({
       type: 'DELETE_MESSAGE',
